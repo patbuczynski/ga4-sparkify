@@ -1,0 +1,35 @@
+[project]
+name = "ga4-sparkify"
+version = "0.1.0"
+description = "Storage- and service-agnostic Spark jobs for flattening GA4 BigQuery-export data"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "loguru>=0.7.3",
+    "pandas>=3.0.2",
+    "pyarrow>=24.0.0",
+    "pyspark>=4.0.1",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+# The BigQuery backend uses the spark-bigquery connector, a JVM jar loaded via
+# spark.jars.packages (see ga4_sparkify/io/bigquery.py:BIGQUERY_CONNECTOR) rather
+# than a pip package. This extra is a marker so `ga4-sparkify[bigquery]` documents
+# the intent; add python-side deps here if a runtime needs them.
+bigquery = []
+# The GCS backend reaches gs:// via the GCS Hadoop connector, also a JVM jar
+# (see ga4_sparkify/io/gcs.py:GCS_CONNECTOR). Marker extra; add python-side deps
+# here if a runtime needs them.
+gcs = []
+all = []
+
+[project.scripts]
+ga4-sparkify = "ga4_sparkify.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["ga4_sparkify*"]

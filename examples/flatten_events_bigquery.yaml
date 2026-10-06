@@ -1,0 +1,35 @@
+# BigQuery -> BigQuery reference (requires: pip install ga4-sparkify[bigquery]
+# and GCP credentials). Reads the GA4 export directly, writes the flattened table.
+job: flatten_events
+run_date: "2021-01-01"
+
+params:
+  event_name: purchase
+  event_type: ecommerce
+  event_list: []
+  event_pattern: ""
+  additional_columns_to_select: []
+
+source:
+  type: bigquery
+  table: "${GCP_PROJECT}.analytics_123456789.events_*"
+  read_format: AVRO             # AVRO needed for GA4 nested array<struct> columns
+
+sink:
+  type: bigquery
+  project: "${GCP_PROJECT}"
+  dataset: ga4_spark
+  table: purchase
+  write_mode: scheduled         # scheduled (single-day partition) | backfill (full)
+  partition_field: event_date
+  cluster_fields: user_pseudo_id
+  write_method: indirect        # indirect (staged, single-partition) | direct (Storage Write API)
+  temporary_bucket: "${GCS_TEMP_BUCKET}"
+
+# On a managed Spark runtime, omit this block and inject a session that already
+# has the spark-bigquery connector. Locally, the connector jar is fetched via
+# spark.jars.packages (added automatically from the backends' `jars`).
+spark:
+  master: "local[*]"
+  conf:
+    spark.sql.shuffle.partitions: "200"

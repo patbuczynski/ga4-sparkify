@@ -1,0 +1,39 @@
+# GCS reference: read GA4-export parquet from a gs:// path, flatten, write back
+# to GCS as parquet. Needs GCP credentials (GOOGLE_APPLICATION_CREDENTIALS /
+# ADC); the GCS connector jar is added automatically for the local dev session.
+job: flatten_events
+run_date: "2021-01-01"
+
+params:
+  event_name: page_view
+  event_type: standard
+  event_list:
+    - page_view
+    - session_start
+    - scroll
+    - user_engagement
+  event_pattern: ""
+  additional_columns_to_select: []
+
+source:
+  type: gcs                             # data on gs:// in a format you choose
+  path: "gs://${GCS_BUCKET}/ga4"
+  layout: date_partitioned             # reads gs://.../ga4/{run_date}; "flat" reads gs://.../ga4
+  format: parquet                      # parquet (default) | csv | json | avro | orc ...
+  options: {}                          # format-specific read opts, e.g. {header: "true"}
+
+sink:
+  type: gcs                             # swap for `bigquery` to load the flattened table
+  path: "gs://${GCS_BUCKET}/out/page_view"
+  mode: overwrite
+  partition_by: event_date
+  format: parquet                      # write format; same options apply
+  options: {}
+
+# On a managed runtime (Dataproc / Dataproc Serverless) drop this block and inject
+# a session -- the GCS connector already ships with the cluster. Locally, the
+# connector jar is fetched via spark.jars.packages (added from the backend's `jars`).
+spark:
+  master: "local[*]"
+  conf:
+    spark.sql.shuffle.partitions: "200"

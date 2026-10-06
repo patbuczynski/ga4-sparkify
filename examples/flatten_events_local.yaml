@@ -1,0 +1,34 @@
+# Local, cloud-free run: reads the bundled data/*.parquet, writes parquet to out/.
+# Runnable as-is:  ga4-sparkify run --config examples/flatten_events_local.yaml
+job: flatten_events
+run_date: "2021-01-01"
+
+params:
+  event_name: page_view         # used only when event_list and event_pattern are empty
+  event_type: standard          # or "ecommerce"
+  event_list:                   # flatten several events in one run (overrides event_name)
+    - page_view
+    - session_start
+    - scroll
+    - user_engagement
+  event_pattern: ""             # or a SQL LIKE pattern, e.g. "%engagement%" (overrides event_name)
+  additional_columns_to_select: []
+
+source:
+  type: parquet
+  path: data
+  layout: flat                  # flat | date_partitioned
+
+sink:
+  type: parquet
+  path: out/page_view
+  mode: overwrite
+  partition_by: event_date
+
+# Optional: only used when the CLI builds a local dev session. On a managed
+# runtime (Dataproc/Databricks/EMR/BQ managed Spark) drop this block and inject
+# the session instead.
+spark:
+  master: "local[*]"
+  conf:
+    spark.sql.shuffle.partitions: "12"
