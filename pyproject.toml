@@ -33,3 +33,22 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = ["ga4_sparkify*"]
+
+[dependency-groups]
+dev = ["ruff>=0.16"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+# Ruff's defaults (pyflakes + the pycodestyle subset that catches real errors)
+# plus the two rule sets that kept drifting: `I` (import order) and `UP`
+# (modern generics). E501 is deliberately not selected -- the traffic-source
+# schema literals in transforms/flatten_sessions.py run long on purpose.
+select = ["E4", "E7", "E9", "F", "I", "UP"]
+
+[tool.ruff.lint.isort]
+# Every module should carry the future import; enforce it rather than rely on
+# remembering. Keeps annotations lazily evaluated and the style uniform.
+required-imports = ["from __future__ import annotations"]

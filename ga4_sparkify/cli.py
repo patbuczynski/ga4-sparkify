@@ -53,7 +53,7 @@ def _coerce(value: str) -> Any:
     return yaml.safe_load(value)
 
 
-def _apply_override(raw: dict, dotted_key: str, value: Any) -> None:
+def _apply_override(raw: dict[str, Any], dotted_key: str, value: Any) -> None:
     keys = dotted_key.split(".")
     node = raw
     for key in keys[:-1]:
@@ -78,7 +78,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if args.command == "run":
-        with open(args.config, "r") as fh:
+        with open(args.config) as fh:
             raw = yaml.safe_load(fh)
         for item in args.set:
             if "=" not in item:

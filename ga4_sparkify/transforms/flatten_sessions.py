@@ -20,12 +20,11 @@ engine-neutrality / correctness fixes folded in:
 
 from __future__ import annotations
 
+import pyspark.sql.functions as F
 from loguru import logger
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StringType, StructField, StructType
 from pyspark.sql.window import Window
-
-import pyspark.sql.functions as F
 
 
 def flatten_sessions(data: DataFrame) -> DataFrame:

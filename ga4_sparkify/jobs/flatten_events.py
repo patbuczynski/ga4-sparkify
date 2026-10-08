@@ -19,8 +19,8 @@ class FlattenEventsJob(BaseJob):
         spark: SparkSession,
         event_name: str,
         event_type: str = "standard",
-        additional_columns_to_select: list | None = None,
-        event_list: list | None = None,
+        additional_columns_to_select: list[str] | None = None,
+        event_list: list[str] | None = None,
         event_pattern: str = "",
     ) -> None:
         super().__init__(reader, writer, spark)

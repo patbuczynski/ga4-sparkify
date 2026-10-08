@@ -1,5 +1,7 @@
 """ga4-sparkify: storage- and service-agnostic Spark jobs for GA4 export data."""
 
+from __future__ import annotations
+
 from .cli import run_from_config
 from .config import JobConfig, load_config
 from .io import (

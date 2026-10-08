@@ -1,5 +1,7 @@
 """Pure, engine-agnostic DataFrame transforms."""
 
+from __future__ import annotations
+
 from .flatten_events import flatten_events
 from .flatten_sessions import flatten_sessions
 

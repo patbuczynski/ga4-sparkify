@@ -1,5 +1,7 @@
 """Storage-agnostic readers and writers."""
 
+from __future__ import annotations
+
 from .base import Reader, Writer
 from .gcs import GCSReader, GCSWriter
 from .parquet import ParquetReader, ParquetWriter

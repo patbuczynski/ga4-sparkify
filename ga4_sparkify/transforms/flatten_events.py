@@ -14,20 +14,19 @@ unconditional ``repartition`` that is safe under Spark Connect.
 
 from __future__ import annotations
 
+import pyspark.sql.functions as F
 from loguru import logger
 from pyspark.sql import DataFrame
 from pyspark.sql.types import LongType
 from pyspark.sql.window import Window
-
-import pyspark.sql.functions as F
 
 
 def flatten_events(
     data: DataFrame,
     event_name: str,
     event_type: str = "standard",
-    additional_columns_to_select: list | None = None,
-    event_list: list | None = None,
+    additional_columns_to_select: list[str] | None = None,
+    event_list: list[str] | None = None,
     event_pattern: str = "",
 ) -> DataFrame:
     """Flatten GA4 export events into the defined wide/pivoted output schema."""
@@ -63,7 +62,7 @@ def flatten_events(
 
 
 def _repartition_and_filter(
-    data: DataFrame, event_name: str, event_list: list, event_pattern: str
+    data: DataFrame, event_name: str, event_list: list[str], event_pattern: str
 ) -> DataFrame:
     """Filter to the requested event(s) and repartition for the pivot/shuffle."""
 
@@ -95,7 +94,7 @@ def _create_default_columns(data: DataFrame) -> DataFrame:
     return data
 
 
-def _select_and_explode(data: DataFrame, additional_columns_to_select: list) -> DataFrame:
+def _select_and_explode(data: DataFrame, additional_columns_to_select: list[str]) -> DataFrame:
     """Select the relevant GA4 columns and explode ``event_params``."""
 
     selected_columns = [
@@ -124,7 +123,7 @@ def _select_and_explode(data: DataFrame, additional_columns_to_select: list) -> 
     return data
 
 
-def _pivot(data: DataFrame, additional_columns_to_select: list) -> DataFrame:
+def _pivot(data: DataFrame, additional_columns_to_select: list[str]) -> DataFrame:
     """Pivot the exploded key/value pairs back into an ``event_params`` struct."""
 
     logger.info("Pivoting data based on event parameters")
@@ -192,7 +191,7 @@ def _pivot(data: DataFrame, additional_columns_to_select: list) -> DataFrame:
 
 
 def _create_additional_columns(
-    data: DataFrame, additional_columns_to_select: list
+    data: DataFrame, additional_columns_to_select: list[str]
 ) -> DataFrame:
     """Add ``session_id`` and normalise ``event_date`` to a date type."""
 

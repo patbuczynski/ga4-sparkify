@@ -90,6 +90,6 @@ def parse_config(raw: dict[str, Any]) -> JobConfig:
 
 
 def load_config(path: str) -> JobConfig:
-    with open(path, "r") as fh:
+    with open(path) as fh:
         raw = yaml.safe_load(fh)
     return parse_config(raw)

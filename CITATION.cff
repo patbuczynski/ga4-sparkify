@@ -1,0 +1,37 @@
+# Citation File Format -- https://citation-file-format.github.io
+# GitHub reads this file to render the "Cite this repository" sidebar entry.
+# Fields marked TEMPLATE are placeholders; fill them in or delete the line.
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "ga4-sparkify"
+abstract: >-
+  Storage- and service-agnostic Spark jobs for flattening GA4 BigQuery-export
+  event data into a wide, pivoted schema. The GA4-export input format and the
+  flattened output schema are fixed; the storage backend and the Spark engine
+  that runs the job are configurable.
+type: software
+authors:
+  - given-names: "Patryk"          
+    family-names: "Buczyński"
+    alias: "patbuczynski"
+    email: "patbuczynski@gmail.com"
+  - given-names: "Bartosz"          
+    family-names: "Klocek"
+  - given-names: "Michał"          
+    family-names: "Bielacki"
+    alias: "bielacki"
+  - given-names: "Paweł"          
+    family-names: "Wróblewski"
+version: "0.1.0"
+date-released: "2026-10-07"  
+license: MIT
+repository-code: "https://github.com/patbuczynski/ga4-sparkify"
+url: "https://github.com/patbuczynski/ga4-sparkify"
+keywords:
+  - ga4
+  - google-analytics
+  - bigquery
+  - pyspark
+  - spark
+  - etl
+  - data-engineering

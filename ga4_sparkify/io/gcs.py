@@ -19,6 +19,7 @@ connectors already ship with the cluster, so the pinned jars are ignored.
 from __future__ import annotations
 
 import os
+from typing import Any
 
 import pyspark
 from loguru import logger
@@ -65,7 +66,7 @@ class GCSReader(Reader):
         run_date: str | None = None,
         layout: str = "flat",
         format: str = "parquet",
-        options: dict | None = None,
+        options: dict[str, Any] | None = None,
     ) -> None:
         _require_gcs_uri(path)
         if layout not in ("flat", "date_partitioned"):
@@ -108,7 +109,7 @@ class GCSWriter(Writer):
         mode: str = "overwrite",
         partition_by: str | list[str] | None = None,
         format: str = "parquet",
-        options: dict | None = None,
+        options: dict[str, Any] | None = None,
     ) -> None:
         _require_gcs_uri(path)
         self.path = path
