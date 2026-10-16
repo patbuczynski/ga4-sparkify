@@ -117,6 +117,10 @@ Traffic-source, `device` and `geo` are taken as the first non-null value in the
 session; missing traffic-source columns are defaulted, so the output schema is
 stable across GA4 export versions.
 
+Events with no `user_pseudo_id` (consent-denied cookieless pings) or no
+`ga_session_id` (e.g. Measurement Protocol hits) cannot be assigned to a session
+and are excluded.
+
 ## Install
 
 ```bash

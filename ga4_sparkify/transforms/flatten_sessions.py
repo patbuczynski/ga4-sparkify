@@ -34,6 +34,7 @@ def flatten_sessions(data: DataFrame) -> DataFrame:
 
     data = _add_missing_columns(data)
     data = _select_relevant_columns(data)
+    data = _drop_events_without_session(data)
     data = _compute_session_features(data)
     data = _clean(data)
     data = _aggregate_sessions(data)
@@ -188,6 +189,35 @@ def _select_relevant_columns(data: DataFrame) -> DataFrame:
     )
 
 
+def _param(key: str, value_type: str) -> str:
+    """SQL expression pulling a single ``event_params`` value by key.
+
+    `get(array, 0)` tolerates a missing key (empty filtered array) and returns
+    NULL; plain `[0]` indexing raises INVALID_ARRAY_INDEX under Spark 4 / ANSI.
+    The original ran on a runtime where out-of-bounds returned NULL -- get()
+    keeps that semantics portably.
+    """
+    return f"get(filter(event_params, param -> param.key = '{key}').value.{value_type}, 0)"
+
+
+def _drop_events_without_session(data: DataFrame) -> DataFrame:
+    """Drop events that cannot be assigned to a session.
+
+    That is events with no user_pseudo_id (consent-denied cookieless pings) or no
+    ga_session_id (e.g. Measurement Protocol hits). They belong to no session, and
+    their NULL session_id groups all of them into one window regardless of user.
+    The extracted ga_session_id is kept as a column for the later steps.
+    """
+
+    logger.info("Dropping events without user_pseudo_id or ga_session_id")
+
+    return (
+        data.filter(F.col("user_pseudo_id").isNotNull())
+        .withColumn("ga_session_id", F.expr(_param("ga_session_id", "int_value")))
+        .filter(F.col("ga_session_id").isNotNull())
+    )
+
+
 def _compute_session_features(data: DataFrame) -> DataFrame:
     """Derive per-session window features (start/end, landing/exit page, ...)."""
 
@@ -196,21 +226,12 @@ def _compute_session_features(data: DataFrame) -> DataFrame:
     session_date = F.to_date(F.col("event_date"), "yyyyMMdd")
     event_timestamp = F.col("event_timestamp")
 
-    # Pull a single event_param value by key. `get(array, 0)` tolerates a missing
-    # key (empty filtered array) and returns NULL; plain `[0]` indexing raises
-    # INVALID_ARRAY_INDEX under Spark 4 / ANSI. The original ran on a runtime
-    # where out-of-bounds returned NULL -- get() keeps that semantics portably.
-    def _param(key: str, value_type: str) -> str:
-        return f"get(filter(event_params, param -> param.key = '{key}').value.{value_type}, 0)"
-
     custom_timestamp = F.coalesce(
         F.expr(_param("custom_timestamp", "int_value")),
         (event_timestamp / 1000).cast("long"),
     )
 
-    ga_session_id = F.expr(_param("ga_session_id", "int_value"))
-
-    session_id = F.concat(F.col("user_pseudo_id"), ga_session_id)
+    session_id = F.concat(F.col("user_pseudo_id"), F.col("ga_session_id"))
 
     session_window = (
         Window.partitionBy(session_id)
@@ -245,7 +266,6 @@ def _compute_session_features(data: DataFrame) -> DataFrame:
         "session_id": session_id,
         "session_date": session_date,
         "user_id": user_id,
-        "ga_session_id": ga_session_id,
         "ga_session_number": ga_session_number,
         "session_start_timestamp": session_start_timestamp,
         "session_end_timestamp": session_end_timestamp,
